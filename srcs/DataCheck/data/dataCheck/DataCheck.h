@@ -23,6 +23,13 @@ namespace cylDataCheck {
 			return begEndian;
 		}
 
+		/// <summary>
+		/// 内存翻转，把指向大小的排序进行反序(uint8_t 元素反序)
+		/// </summary>
+		/// <param name="ptr">内存指针</param>
+		/// <param name="size">转换长度</param>
+		static void converEndian( uint8_t *ptr, uint64_t size );
+
 	};
 }
 

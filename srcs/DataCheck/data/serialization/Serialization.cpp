@@ -67,15 +67,17 @@ inline Data_Array serializationSize( const uint64_t &size, const uint64_t &seria
 
 template< typename T_Serialization_Data_Unity >
 Data_Array Serialization< T_Serialization_Data_Unity >::serialization( const T_Serialization_Data_Unity &serialization_data, uint64_t &data_serialization_result_len ) {
-	data_serialization_result_len = firstUnitySize + sizeof( serialization_data );
+	data_serialization_result_len = firstUnitySize + sizeof( serialization_data ) + sizeof( DataCheck::begEndian );
 	Data_Array dataArray = serializationSize( data_serialization_result_len, firstUnitySize, type );
 	uint8_t *px = new uint8_t[ data_serialization_result_len ];
+	*px = DataCheck::begEndian; // 大小端
 	const uint8_t *ptr = reinterpret_cast< const uint8_t * >( &serialization_data );
 	uint64_t index = 0;
 	for( ; index < firstUnitySize; ++index )
-		px[ index ] = dataArray[ index ];
+		px[ index + 1 ] = dataArray[ index ];
+	++index;
 	for( ; index < data_serialization_result_len; ++index )
-		px[ index ] = ptr[ index - firstUnitySize ];
+		px[ index ] = ptr[ index - firstUnitySize - 1 ];
 	return std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
 		delete[] p;
 	} );
@@ -83,15 +85,17 @@ Data_Array Serialization< T_Serialization_Data_Unity >::serialization( const T_S
 
 template< typename T_Serialization_Data_Array_Ptr >
 Data_Array Serialization< T_Serialization_Data_Array_Ptr [ ] >::serialization( const T_Serialization_Data_Array_Ptr *serialization_data, const uint64_t &array_count, uint64_t &data_serialization_result_len ) {
-	data_serialization_result_len = firstUnitySize + sizeof( *serialization_data ) * array_count;
+	data_serialization_result_len = firstUnitySize + sizeof( *serialization_data ) * array_count + sizeof( DataCheck::begEndian );
 	Data_Array dataArray = serializationSize( data_serialization_result_len, firstUnitySize, type );
 	uint8_t *px = new uint8_t[ data_serialization_result_len ];
+	*px = DataCheck::begEndian;
 	const uint8_t *ptr = reinterpret_cast< const uint8_t * >( serialization_data );
 	uint64_t index = 0;
 	for( ; index < firstUnitySize; ++index )
-		px[ index ] = dataArray[ index ];
+		px[ index + 1 ] = dataArray[ index ];
+	++index;
 	for( ; index < data_serialization_result_len; ++index )
-		px[ index ] = ptr[ index - firstUnitySize ];
+		px[ index ] = ptr[ index - firstUnitySize - 1 ];
 	return std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
 		delete[] p;
 	} );

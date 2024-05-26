@@ -2,6 +2,7 @@
 #include <iostream>
 #include <nameSpace/cylDataCheck.h>
 #include "../auto_generate_files/macro/cmake_to_c_cpp_header_env.h"
+#include "data/dataCheck/DataCheck.h"
 #include "data/serialization/Serialization.h"
 #include "data/unserialize/Unserialize.h"
 void testSerialization( ) {
@@ -42,10 +43,15 @@ void testSerialization( ) {
 		, 89
 		, 00 };
 	dataArray = cylDataCheck::Serialization< int [ ] >::serialization( intArray, 4, resuult );
-	if( dataArray )
+	if( dataArray ) {
 		for( int index = 0; index < resuult; ++index )
 			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
-	std::cout << std::endl;
+		std::cout << std::endl;
+		cylDataCheck::DataCheck::converEndian( dataArray.get( ), resuult );
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
 	std::cout << "int [ ] ====================" << std::endl;
 
 	std::shared_ptr< int[ ] > resulIntarray = nullptr;
