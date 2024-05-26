@@ -47,10 +47,6 @@ void testSerialization( ) {
 		for( int index = 0; index < resuult; ++index )
 			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
 		std::cout << std::endl;
-		cylDataCheck::DataCheck::converEndian( dataArray.get( ), resuult );
-		for( int index = 0; index < resuult; ++index )
-			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
-		std::cout << std::endl;
 	}
 	std::cout << "int [ ] ====================" << std::endl;
 
@@ -65,5 +61,8 @@ void testSerialization( ) {
 		std::cout << std::endl;
 	}
 	std::cout << "--------------------" << std::endl;
+
+}
+void testDataCheck( ) {
 
 }

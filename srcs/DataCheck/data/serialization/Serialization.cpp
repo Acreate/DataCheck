@@ -67,7 +67,7 @@ inline Data_Array serializationSize( const uint64_t &size, const uint64_t &seria
 
 template< typename T_Serialization_Data_Unity >
 Data_Array Serialization< T_Serialization_Data_Unity >::serialization( const T_Serialization_Data_Unity &serialization_data, uint64_t &data_serialization_result_len ) {
-	data_serialization_result_len = firstUnitySize + sizeof( serialization_data ) + sizeof( DataCheck::begEndian );
+	data_serialization_result_len = firstUnitySize + sizeof( T_Serialization_Data_Unity ) + sizeof( DataCheck::begEndian );
 	Data_Array dataArray = serializationSize( data_serialization_result_len, firstUnitySize, type );
 	uint8_t *px = new uint8_t[ data_serialization_result_len ];
 	*px = DataCheck::begEndian; // 大小端
@@ -81,6 +81,20 @@ Data_Array Serialization< T_Serialization_Data_Unity >::serialization( const T_S
 	return std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
 		delete[] p;
 	} );
+}
+template< typename T_Serialization_Data_Unity >
+DataCheck_Shared Serialization< T_Serialization_Data_Unity >::DataCheck( const T_Serialization_Data_Unity &serialization_data, uint64_t &data_serialization_result_len ) {
+	data_serialization_result_len = sizeof( serialization_data );
+	uint8_t *px = new uint8_t[ data_serialization_result_len ];
+	const uint8_t *ptr = reinterpret_cast< const uint8_t * >( &serialization_data );
+	for( auto index = 0; index < data_serialization_result_len; ++index )
+		px[ index ] = ptr[ index ];
+	auto allSize = sizeof( data_serialization_result_len ) + data_serialization_result_len + sizeof( cylDataCheck::DataCheck::begEndian ) + sizeof( type );
+	auto sharedPtr = std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
+		delete[] p;
+	} );
+	auto dataChackSPtr = std::make_shared< cylDataCheck::DataCheck >( cylDataCheck::DataCheck::begEndian, allSize, type, sharedPtr, data_serialization_result_len );
+	return dataChackSPtr;
 }
 
 template< typename T_Serialization_Data_Array_Ptr >
@@ -99,4 +113,18 @@ Data_Array Serialization< T_Serialization_Data_Array_Ptr [ ] >::serialization( c
 	return std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
 		delete[] p;
 	} );
+}
+template< typename T_Serialization_Data_Array_Ptr >
+DataCheck_Shared Serialization< T_Serialization_Data_Array_Ptr[ ] >::DataCheck( const T_Serialization_Data_Array_Ptr *serialization_data, const uint64_t &array_count, uint64_t &data_serialization_result_len ) {
+	data_serialization_result_len = sizeof( *serialization_data ) * array_count;
+	uint8_t *px = new uint8_t[ data_serialization_result_len ];
+	const uint8_t *ptr = reinterpret_cast< const uint8_t * >( serialization_data );
+	for( auto index = 0; index < data_serialization_result_len; ++index )
+		px[ index ] = ptr[ index ];
+	auto allSize = sizeof( data_serialization_result_len ) + data_serialization_result_len + sizeof( cylDataCheck::DataCheck::begEndian ) + sizeof( type );
+	auto sharedPtr = std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
+		delete[] p;
+	} );
+	auto dataChackSPtr = std::make_shared< cylDataCheck::DataCheck >( cylDataCheck::DataCheck::begEndian, allSize, type, sharedPtr, data_serialization_result_len );
+	return dataChackSPtr;
 }

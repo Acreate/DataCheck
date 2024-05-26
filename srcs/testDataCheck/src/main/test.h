@@ -5,5 +5,9 @@
 /// 序列化功能测试
 /// </summary>
 void testSerialization( );
+/// <summary>
+/// 数据串校验测试
+/// </summary>
+void testDataCheck( );
 
 #endif // TEST_H_H_HEAD__FILE__

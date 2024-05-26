@@ -62,5 +62,37 @@ void DataCheck::converEndian( uint8_t *ptr, uint64_t size ) {
 	}
 
 }
+DataCheck::~DataCheck( ) {
+}
+DataCheck::DataCheck( bool current_endian, uint64_t data_size, uint64_t data_type, const std::shared_ptr< uint8_t[ ] > &data_array_shared, const uint64_t data_array_count ): currentEndian( current_endian )
+, dataSize( data_size )
+, dataType( data_type )
+, dataArrayShared( data_array_shared )
+, dataArrayCount( data_array_count ) { }
+DataCheck::DataCheck( uint8_t *serialization_data ) {
+
+}
+
+/// <summary>
+/// 使用 serialization_size 内存大小存储 size 数据
+/// </summary>
+/// <param name="size">存储对象</param>
+/// <param name="serialization_size">使用空间</param>
+/// <param name="type">类型</param>
+/// <returns>存储后的列表</returns>
+inline Data_Array serializationSize( const uint64_t &size, const uint64_t &serialization_size, const uint64_t &type ) {
+	uint8_t *px = new uint8_t[ serialization_size ];
+	const uint8_t *ptr = reinterpret_cast< const uint8_t * >( &size );
+	uint64_t index = 0, max = serialization_size / 2;
+	for( ; index < max; ++index )
+		px[ index ] = ptr[ index ];
+	ptr = reinterpret_cast< const uint8_t * >( &type );
+	for( ; index < serialization_size; ++index )
+		px[ index ] = ptr[ index - max ];
+	return std::shared_ptr< uint8_t[ ] >( px, []( uint8_t *p ) {
+		delete[] p;
+	} );
+}
+
 
 bool DataCheck::begEndian = DataCheck::isBegEndian( );

@@ -12,17 +12,21 @@ namespace cylDataCheck {
 	/// <summary>
 	/// 序列化
 	/// </summary>
-	template< typename T_Serialization_Data_ >
+	template< typename T_Serialization_Data_Unity >
 	class DATACHECK_EXPORT Serialization;
 	/// <summary>
 	/// 反序列化
 	/// </summary>
-	template< typename T_Serialization_Data_ >
+	template< typename T_Serialization_Data_Unity >
 	class DATACHECK_EXPORT Unserialize;
 	/// <summary>
 	/// 数据列
 	/// </summary>
 	using Data_Array = std::shared_ptr< uint8_t[ ] >;
+	/// <summary>
+	/// 数据串
+	/// </summary>
+	using DataCheck_Shared = std::shared_ptr< DataCheck >;
 }
 
 #endif // CYLDB_H_H_HEAD__FILE__

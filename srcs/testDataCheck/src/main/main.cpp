@@ -10,5 +10,8 @@ int main( int argc, char *argv[ ] ) {
 	std::wcout.imbue( locale );
 	testSerialization( );
 	std::cout << cylDataCheck::DataCheck::nativeIsBegEndian( ) << std::endl;
+	std::cout << "VVVVVVVVVVVVVVVVVVVVVVVVVVV" << std::endl << std::endl;
+	testDataCheck( );
+	std::cout << std::endl << "↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑" << std::endl;
 	return 0;
 }

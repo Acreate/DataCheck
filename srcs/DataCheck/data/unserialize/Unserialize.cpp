@@ -54,8 +54,10 @@ uint64_t analysisMemoryReadCount( const uint8_t *serialization_data, uint64_t re
 template< typename T_Serialization_Data_Unity >
 uint64_t Unserialize< T_Serialization_Data_Unity >::unserialize( const uint8_t *serialization_data, std::shared_ptr< T_Serialization_Data_Unity > &data_serialization_result ) {
 
+	bool isbegEndian = *serialization_data;
+	if( isbegEndian != DataCheck::begEndian ) // 大小端不匹配
+		return 0;
 	uint64_t readMaxCount = sizeof( firstUnitySize );
-	uint8_t isbegEndian = *serialization_data;
 	serialization_data = serialization_data + 1;
 	uint64_t count = analysisMemoryReadCount( serialization_data, readMaxCount );
 	serialization_data = serialization_data + readMaxCount;
@@ -79,8 +81,10 @@ uint64_t Unserialize< T_Serialization_Data_Unity >::unserialize( const uint8_t *
 template< typename T_Serialization_Data_Array_Ptr >
 uint64_t Unserialize< T_Serialization_Data_Array_Ptr [ ] >::unserialize( const uint8_t *serialization_data, std::shared_ptr< T_Serialization_Data_Array_Ptr[ ] > &data_serialization_result, uint64_t &data_serialization_result_count ) {
 
+	bool isbegEndian = *serialization_data;
+	if( isbegEndian != DataCheck::begEndian ) // 大小端不匹配
+		return 0;
 	uint64_t readMaxCount = sizeof( firstUnitySize );
-	uint8_t isbegEndian = *serialization_data;
 	serialization_data = serialization_data + 1;
 	uint64_t userCount = analysisMemoryReadCount( serialization_data, readMaxCount );
 	serialization_data = serialization_data + readMaxCount;
