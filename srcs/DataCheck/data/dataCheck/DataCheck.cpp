@@ -9,7 +9,7 @@ bool DataCheck::isBegEndian( ) {
 	return bint.c[ 0 ] == 1;
 }
 void DataCheck::converEndian( uint8_t *ptr, uint64_t size ) {
-	if( size == 0 )
+	if( size == 0 || size == 1 )
 		return;
 	if( size == 2 ) {
 		uint8_t temp = ptr[ 0 ];
@@ -70,6 +70,100 @@ DataCheck::DataCheck( bool current_endian, uint64_t data_size, uint64_t data_typ
 , dataArrayShared( data_array_shared )
 , dataArrayCount( data_array_count ) { }
 DataCheck::DataCheck( uint8_t *serialization_data ) {
+	currentEndian = *serialization_data; // 获取大小端
+	serialization_data += 1;
+	auto index = 0;
+	if( DataCheck::begEndian != currentEndian ) { // 端不同，需要逆转数据，转为本地端
+		auto ptr = reinterpret_cast< uint8_t * >( &dataSize );
+		for( index = 0; index < 8; ++index )
+			ptr[ index ] = serialization_data[ 7 - index ];
+
+		serialization_data = serialization_data + 8;
+		ptr = reinterpret_cast< uint8_t * >( &dataType );
+		for( index = 0; index < 8; ++index )
+			ptr[ index ] = serialization_data[ 7 - index ];
+		serialization_data = serialization_data + 8;
+
+		if( dataType == 1 ) { // 单元素
+			auto residueSize = dataSize - 1 - sizeof( dataSize ) * 2;// 剩余数量
+			uint8_t *newPtr = new uint8_t[ residueSize ];
+			for( index = 0; index < residueSize; ++index )
+				newPtr[ index ] = serialization_data[ index ];
+			converEndian( newPtr, residueSize );
+			dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
+				delete[] p;
+			} );
+		} else if( dataType == 2 ) { // 数组元素
+			serialization_data = serialization_data + 8;
+			ptr = reinterpret_cast< uint8_t * >( &dataArrayCount );
+			for( index = 0; index < 8; ++index )
+				ptr[ index ] = serialization_data[ 7 - index ];
+			auto residueSize = dataSize - 1 - sizeof( dataSize ) * 3; // 剩余数量
+			auto typeUnitySize = residueSize / dataArrayCount; // 元素大小
+			uint8_t *buff = new uint8_t[ typeUnitySize ];
+			uint8_t *newPtr = new uint8_t[ residueSize ];
+			uint64_t subIndex = 0;
+			uint64_t newPtrIndex = 0;
+			for( index = 0; index < dataArrayCount; ++index ) {
+				for( subIndex = 0; subIndex < typeUnitySize; ++subIndex )
+					buff[ subIndex ] = serialization_data[ subIndex ];
+				serialization_data += typeUnitySize; // 下一个元素
+				converEndian( buff, typeUnitySize );
+				for( subIndex = 0; subIndex < typeUnitySize; ++subIndex, ++newPtrIndex )
+					newPtr[ newPtrIndex ] = buff[ subIndex ];
+			}
+			delete[] buff; // 删除元素
+			dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
+				delete[] p;
+			} );
+		}
+
+		return;
+	}
+	/// 相同端
+
+	auto ptr = reinterpret_cast< uint8_t * >( &dataSize );
+	for( index = 0; index < 8; ++index )
+		ptr[ index ] = serialization_data[ index ];
+
+	serialization_data = serialization_data + 8;
+	ptr = reinterpret_cast< uint8_t * >( &dataType );
+	for( index = 0; index < 8; ++index )
+		ptr[ index ] = serialization_data[ index ];
+
+	serialization_data = serialization_data + 8;
+
+	if( dataType == 1 ) { // 单元素
+		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 2;// 剩余数量
+		uint8_t *newPtr = new uint8_t[ residueSize ];
+		for( index = 0; index < residueSize; ++index )
+			newPtr[ index ] = serialization_data[ index ];
+		dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
+			delete[] p;
+		} );
+	} else if( dataType == 2 ) { // 数组元素
+		serialization_data = serialization_data + 8;
+		ptr = reinterpret_cast< uint8_t * >( &dataArrayCount );
+		for( index = 0; index < 8; ++index )
+			ptr[ index ] = serialization_data[ 7 - index ];
+		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 3; // 剩余数量
+		auto typeUnitySize = residueSize / dataArrayCount; // 元素大小
+		uint8_t *buff = new uint8_t[ typeUnitySize ];
+		uint8_t *newPtr = new uint8_t[ residueSize ];
+		uint64_t subIndex = 0;
+		uint64_t newPtrIndex = 0;
+		for( index = 0; index < dataArrayCount; ++index ) {
+			for( subIndex = 0; subIndex < typeUnitySize; ++subIndex )
+				buff[ subIndex ] = serialization_data[ subIndex ];
+			serialization_data += typeUnitySize; // 下一个元素
+			for( subIndex = 0; subIndex < typeUnitySize; ++subIndex, ++newPtrIndex )
+				newPtr[ newPtrIndex ] = buff[ subIndex ];
+		}
+		delete[] buff; // 删除元素
+		dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
+			delete[] p;
+		} );
+	}
 
 }
 
@@ -95,4 +189,4 @@ inline Data_Array serializationSize( const uint64_t &size, const uint64_t &seria
 }
 
 
-bool DataCheck::begEndian = DataCheck::isBegEndian( );
+uint8_t DataCheck::begEndian = DataCheck::isBegEndian( );

@@ -17,7 +17,7 @@ namespace cylDataCheck {
 		/// <returns>返回 true 表示大端</returns>
 		static bool isBegEndian( );
 	private:
-		static bool begEndian; // 大小端识别
+		static uint8_t begEndian; // 大小端识别
 	public:
 		static bool nativeIsBegEndian( ) {
 			return begEndian;
@@ -50,7 +50,7 @@ namespace cylDataCheck {
 		/// 从一个已经被序列化的对象初始化校验串
 		/// </summary>
 		/// <param name="serialization_data">已经被序列化的对象</param>
-		DataCheck(uint8_t* serialization_data);
+		DataCheck( uint8_t *serialization_data );
 	public:
 		/// <summary>
 		/// 序列化到大端数据
