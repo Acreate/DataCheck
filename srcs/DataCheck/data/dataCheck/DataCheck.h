@@ -30,7 +30,7 @@ namespace cylDataCheck {
 		/// <param name="size">转换长度</param>
 		static void converEndian( uint8_t *ptr, uint64_t size );
 	private:
-		bool currentEndian;// 当前大小端
+		uint8_t currentEndian;// 当前大小端
 		uint64_t dataSize; // 数据占用大小
 		uint64_t dataType; // 数据类型
 		uint64_t dataArrayCount; // 数据列表个数
@@ -62,7 +62,16 @@ namespace cylDataCheck {
 		/// </summary>
 		/// <returns>小端数据序列</returns>
 		Data_Array converLittleEndian( );
-
+		/// <summary>
+		/// 小端序列化内容
+		/// </summary>
+		/// <returns>被序列化的串</returns>
+		Data_Array littleEndianSerialization( );
+		/// <summary>
+		/// 大端序列化内容
+		/// </summary>
+		/// <returns>被序列化的串</returns>
+		Data_Array bigEndianSerialization( );
 	};
 }
 

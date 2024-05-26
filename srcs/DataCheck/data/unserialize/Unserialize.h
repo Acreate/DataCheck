@@ -15,9 +15,9 @@ namespace cylDataCheck {
 		/// 从数据当中还原对象
 		/// </summary>
 		/// <param name="serialization_data">源数据</param>
-		/// <param name="data_serialization_result">还原对象</param>
+		/// <param name="data_serialization_result_count">还原对象</param>
 		/// <returns>使用数据长度，失败返回 0</returns>
-		static uint64_t unserialize( const uint8_t *serialization_data, std::shared_ptr< T_Serialization_Data_Unity > &data_serialization_result );
+		static uint64_t unserialize( const uint8_t *serialization_data, std::shared_ptr< T_Serialization_Data_Unity > &data_serialization_result_count );
 	};
 
 

@@ -21,13 +21,6 @@ namespace cylDataCheck {
 		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
 		/// <returns>序列化对象，失败返回 nullptr</returns>
 		static Data_Array serialization( const T_Serialization_Data_Unity &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 生成校验串
-		/// </summary>
-		/// <param name="serialization_data">转换的对象</param>
-		/// <param name="data_serialization_result_len">数据长度</param>
-		/// <returns>校验串对象指针</returns>
-		static DataCheck_Shared DataCheck( const T_Serialization_Data_Unity &serialization_data, uint64_t &data_serialization_result_len );
 	};
 
 
@@ -45,14 +38,6 @@ namespace cylDataCheck {
 		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
 		/// <returns>序列化对象，失败返回 nullptr</returns>
 		static Data_Array serialization( const T_Serialization_Data_Array_Ptr *serialization_data, const uint64_t &array_count, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 生成校验串
-		/// </summary>
-		/// <param name="serialization_data">生成数组</param>
-		/// <param name="array_count">数组个数</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		static DataCheck_Shared DataCheck( const T_Serialization_Data_Array_Ptr *serialization_data, const uint64_t &array_count, uint64_t &data_serialization_result_len );
 	};
 }
 

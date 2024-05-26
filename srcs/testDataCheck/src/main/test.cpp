@@ -10,10 +10,11 @@ void testSerialization( ) {
 	bool flag = true;
 	uint64_t resuult;
 	auto dataArray = cylDataCheck::Serialization< bool >::serialization( flag, resuult );
-	if( dataArray )
+	if( dataArray ) {
 		for( int index = 0; index < resuult; ++index )
 			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
-	std::cout << std::endl;
+		std::cout << std::endl;
+	}
 	std::cout << "bool ====================" << std::endl;
 	std::shared_ptr< bool > resulBool = nullptr;
 	uint64_t unserialize = cylDataCheck::Unserialize< bool >::unserialize( dataArray.get( ), resulBool );
@@ -61,8 +62,104 @@ void testSerialization( ) {
 		std::cout << std::endl;
 	}
 	std::cout << "--------------------" << std::endl;
+}
+void testDataCheckBool( ) {
+	uint64_t resuult;
+	bool flag = true;
+	cylDataCheck::Data_Array dataArray = cylDataCheck::Serialization< bool >::serialization( flag, resuult );
+	if( dataArray ) {
+		std::cout << u8"原型 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+
+	std::cout << "bool ====================" << std::endl;
+
+	cylDataCheck::DataCheck dataCheck = cylDataCheck::DataCheck( dataArray.get( ) );
+	dataArray = dataCheck.bigEndianSerialization( );
+	if( dataArray ) {
+		std::cout << u8"大端 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+	dataArray = dataCheck.littleEndianSerialization( );
+	if( dataArray ) {
+		std::cout << u8"小端 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+
+	std::cout << "--------------------" << std::endl;
+}
+
+void testDataCheckInt( ) {
+	uint64_t resuult;
+	cylDataCheck::Data_Array dataArray = cylDataCheck::Serialization< int >::serialization( 22, resuult );
+	if( dataArray ) {
+		std::cout << u8"原型 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+	std::cout << "int ====================" << std::endl;
+	cylDataCheck::DataCheck dataCheck = cylDataCheck::DataCheck( dataArray.get( ) );
+	dataArray = dataCheck.bigEndianSerialization( );
+	if( dataArray ) {
+		std::cout << u8"大端 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+	dataArray = dataCheck.littleEndianSerialization( );
+	if( dataArray ) {
+		std::cout << u8"小端 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+
+	std::cout << "--------------------" << std::endl;
+
+}
+void testDataCheckIntArray( ) {
+	uint64_t resuult;
+	int intArray[ ] = { 24
+		, 56
+		, 89
+		, 00 };
+
+	cylDataCheck::Data_Array dataArray = cylDataCheck::Serialization< int [ ] >::serialization( intArray, 4, resuult );
+	if( dataArray ) {
+		std::cout << u8"原型 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+	std::cout << "int [ ] ====================" << std::endl;
+	cylDataCheck::DataCheck dataCheck = cylDataCheck::DataCheck( dataArray.get( ) );
+	dataArray = dataCheck.bigEndianSerialization( );
+	if( dataArray ) {
+		std::cout << u8"大端 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+	dataArray = dataCheck.littleEndianSerialization( );
+	if( dataArray ) {
+		std::cout << u8"小端 : ";
+		for( int index = 0; index < resuult; ++index )
+			std::cout << static_cast< int >( dataArray[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+
+	std::cout << "--------------------" << std::endl;
 
 }
 void testDataCheck( ) {
-
+	//testDataCheckBool( );
+	//testDataCheckInt( );
+	testDataCheckIntArray( );
 }
