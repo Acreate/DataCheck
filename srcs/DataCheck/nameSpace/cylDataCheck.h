@@ -12,10 +12,12 @@ namespace cylDataCheck {
 	/// <summary>
 	/// 序列化
 	/// </summary>
+	template< typename T_Serialization_Data_ >
 	class DATACHECK_EXPORT Serialization;
 	/// <summary>
 	/// 反序列化
 	/// </summary>
+	template< typename T_Serialization_Data_ >
 	class DATACHECK_EXPORT Unserialize;
 	/// <summary>
 	/// 数据列

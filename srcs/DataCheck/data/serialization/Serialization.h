@@ -6,106 +6,38 @@
 
 #include "../../nameSpace/cylDataCheck.h"
 namespace cylDataCheck {
+
+	template< typename T_Serialization_Data_ >
 	class DATACHECK_EXPORT Serialization {
-	private: // - 成员
-		bool begEndian;
-	public:
-		virtual ~Serialization( );
-	private: // - 构造器
-		Serialization( );
+
 	private: // - 静态成员
-		static Serialization instance;
-	public: // - 静态类
-		/// <summary>
-		/// 获取实例
-		/// </summary>
-		/// <returns>实例对象指针</returns>
-		static Serialization * getInstance( );
+		static uint64_t firstUnitySize;   // 首个单元大小（首个单元记录元素长度）
+		static uint64_t type;   // 可以序列化的类型
 	public: // - 成员
 		/// <summary>
-		/// 判断当前环境是否是大端
-		/// </summary>
-		/// <returns>返回 true 表示大端</returns>
-		bool isBegEndian( ) {
-			return begEndian;
-		}
-		/// <summary>
 		/// 序列化数据
 		/// </summary>
 		/// <param name="serialization_data">被序列化的对象</param>
 		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
 		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const bool &serialization_data, uint64_t &data_serialization_result_len );
+		static Data_Array serialization( const T_Serialization_Data_ &serialization_data, uint64_t &data_serialization_result_len );
+	};
+
+
+	template< typename T_Serialization_Data_Array_Ptr >
+	class DATACHECK_EXPORT Serialization< T_Serialization_Data_Array_Ptr [ ] > {
+	private: // - 静态成员
+		static uint64_t firstUnitySize;   // 首个单元大小（首个单元记录元素长度）
+		static uint64_t type;   // 可以序列化的类型
+	public: // - 成员
 		/// <summary>
 		/// 序列化数据
 		/// </summary>
 		/// <param name="serialization_data">被序列化的对象</param>
+		/// <param name="array_count">序列化数组个数</param>
 		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
 		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const short &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const int &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const long &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const long long &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const unsigned short &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const unsigned int &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const unsigned long &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const unsigned long long &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const float &serialization_data, uint64_t &data_serialization_result_len );
-		/// <summary>
-		/// 序列化数据
-		/// </summary>
-		/// <param name="serialization_data">被序列化的对象</param>
-		/// <param name="data_serialization_result_len">返回序列化数据的长度</param>
-		/// <returns>序列化对象，失败返回 nullptr</returns>
-		Data_Array serialization( const double &serialization_data, uint64_t &data_serialization_result_len );
+		static Data_Array serialization( const T_Serialization_Data_Array_Ptr *serialization_data, const uint64_t &array_count, uint64_t &data_serialization_result_len );
 	};
 }
 
