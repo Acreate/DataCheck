@@ -1,9 +1,9 @@
 ﻿#ifndef UNSERIALIZE_H_H_HEAD__FILE__
 #define UNSERIALIZE_H_H_HEAD__FILE__
 #pragma once
-#include "../../nameSpace/cylDB.h"
-namespace cylDB {
-	class QTEXTENDDB_EXPORT Unserialize {
+#include "../../nameSpace/cylDataCheck.h"
+namespace cylDataCheck {
+	class DATACHECK_EXPORT Unserialize {
 
 
 	};

@@ -2,9 +2,9 @@
 #define DATACHECK_H_H_HEAD__FILE__
 #pragma once
 
-#include "../../nameSpace/cylDB.h"
-namespace cylDB {
-	class QTEXTENDDB_EXPORT DataCheck {
+#include "../../nameSpace/cylDataCheck.h"
+namespace cylDataCheck {
+	class DATACHECK_EXPORT DataCheck {
 
 
 	};

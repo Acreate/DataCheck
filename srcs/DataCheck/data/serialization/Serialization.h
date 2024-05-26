@@ -4,9 +4,9 @@
 
 #include <cstdint>
 
-#include "../../nameSpace/cylDB.h"
-namespace cylDB {
-	class QTEXTENDDB_EXPORT Serialization {
+#include "../../nameSpace/cylDataCheck.h"
+namespace cylDataCheck {
+	class DATACHECK_EXPORT Serialization {
 	private: // - 成员
 		bool begEndian;
 	public:

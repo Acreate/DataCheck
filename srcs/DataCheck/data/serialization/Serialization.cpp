@@ -1,5 +1,6 @@
 ﻿#include "Serialization.h"
-using namespace cylDB;
+using namespace cylDataCheck;
+
 Serialization Serialization::instance;
 Serialization::~Serialization( ) {
 }

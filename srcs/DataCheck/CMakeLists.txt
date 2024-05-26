@@ -28,8 +28,19 @@ set( cmake_definitions_org "${cmake_definitions_tmp}/cmake_in/cmake_to_c_cpp_hea
 
 set( ${project_name_include_dir}_include_dir ${CMAKE_CURRENT_LIST_DIR} PARENT_SCOPE )
 
+
+
+string( REPLACE "." "_" project_name_include_dir ${PROJECT_NAME} )
+set( ${project_name_include_dir}_include_dir ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/ PARENT_SCOPE )
+
+STRING( SUBSTRING "${PROJECT_NAME}" 0 1 exportFileStartName )
+STRING( SUBSTRING "${PROJECT_NAME}" 1 -1 exportFileName )
+STRING( TOUPPER ${exportFileStartName} exportFileStartName )
+SET( exportFileName ${CMAKE_CURRENT_SOURCE_DIR}/${cmake_auto_sub_dir_name}/export/${exportFileStartName}${exportFileName}_export.h )
+
+
 # # 合并源码
-list( APPEND ${SRC_LIST} ${SRC_UI} ${QM_FILES} ${SRC_DATA} ${cmake_definitions_out} )
+list( APPEND ${SRC_LIST} ${SRC_UI} ${QM_FILES} ${SRC_DATA} ${cmake_definitions_out} ${exportFileName})
 add_library( ${PROJECT_NAME} SHARED
 	${SRC_LIST}
 )
@@ -44,14 +55,6 @@ else()
 endif()
 
 configure_file( "${cmake_definitions_org}" "${cmake_definitions_out}" )
-
-string( REPLACE "." "_" project_name_include_dir ${PROJECT_NAME} )
-set( ${project_name_include_dir}_include_dir ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/ PARENT_SCOPE )
-
-STRING( SUBSTRING "${PROJECT_NAME}" 0 1 exportFileStartName )
-STRING( SUBSTRING "${PROJECT_NAME}" 1 -1 exportFileName )
-STRING( TOUPPER ${exportFileStartName} exportFileStartName )
-SET( exportFileName ${CMAKE_CURRENT_SOURCE_DIR}/${cmake_auto_sub_dir_name}/export/${exportFileStartName}${exportFileName}_export.h )
 GENERATE_EXPORT_HEADER( ${PROJECT_NAME}
 	EXPORT_FILE_NAME ${exportFileName}
 )
