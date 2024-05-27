@@ -10,6 +10,18 @@ namespace cylDataCheck {
 	/// </summary>
 	class DATACHECK_EXPORT DataCheck;
 	/// <summary>
+	/// 文件系统
+	/// </summary>
+	class DATACHECK_EXPORT FileSystem;
+	/// <summary>
+	/// 文件
+	/// </summary>
+	class DATACHECK_EXPORT File;
+	/// <summary>
+	/// 目录
+	/// </summary>
+	class DATACHECK_EXPORT Dir;
+	/// <summary>
 	/// 序列化
 	/// </summary>
 	template< typename T_Serialization_Data_Unity >
