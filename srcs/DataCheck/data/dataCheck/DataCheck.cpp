@@ -75,173 +75,197 @@ DataCheck::DataCheck( bool current_endian, uint64_t data_size, uint64_t data_typ
 
 DataCheck::DataCheck( uint8_t *serialization_data ) {
 	currentEndian = *serialization_data; // 获取大小端
-	serialization_data += 1;
+	auto endianSize = sizeof( currentEndian );
+	serialization_data += endianSize; // 跳过端信息
 	auto index = 0;
 	if( DataCheck::begEndian != currentEndian ) { // 端不同，需要逆转数据，转为本地端
 		currentEndian = DataCheck::begEndian;
-		auto ptr = reinterpret_cast< uint8_t * >( &dataSize );
-		for( index = 0; index < 8; ++index )
-			ptr[ index ] = serialization_data[ 7 - index ];
+		auto dataSizeSize = sizeof( dataSize ); // 获取总长数据段大小
+		auto ptr = reinterpret_cast< uint8_t * >( &dataSize ); // 指向总长数据段
+		for( index = 0; index < dataSizeSize; ++index )
+			ptr[ index ] = serialization_data[ index ];
+		converEndian( ptr, dataSizeSize );
+		serialization_data = serialization_data + dataSizeSize;// 跳过总长数据段
 
-		serialization_data = serialization_data + 8;
-		ptr = reinterpret_cast< uint8_t * >( &dataType );
-		for( index = 0; index < 8; ++index )
-			ptr[ index ] = serialization_data[ 7 - index ];
-		serialization_data = serialization_data + 8;
+		auto dataTypeSize = sizeof( dataType ); // 获取数据类型段大小
+		ptr = reinterpret_cast< uint8_t * >( &dataType ); // 指向数据类型段
+		for( index = 0; index < dataTypeSize; ++index )
+			ptr[ index ] = serialization_data[ index ];
+		converEndian( ptr, dataTypeSize );
+		serialization_data = serialization_data + dataTypeSize;// 跳过数据类型段
 
-		if( dataType == 1 ) { // 单元素
-			auto residueSize = dataSize - 1 - sizeof( dataSize ) * 2;// 剩余数量
-			uint8_t *newPtr = new uint8_t[ residueSize ];
-			for( index = 0; index < residueSize; ++index )
-				newPtr[ index ] = serialization_data[ index ];
+		auto dataArrayCountSize = sizeof( dataArrayCount ); // 获取数据元素个数段大小
+		ptr = reinterpret_cast< uint8_t * >( &dataArrayCount ); // 指向数据元素个数段
+		for( index = 0; index < dataArrayCountSize; ++index )
+			ptr[ index ] = serialization_data[ index ];
+		converEndian( ptr, dataArrayCountSize );
+		serialization_data = serialization_data + dataArrayCountSize;// 跳过数据元素个数段
+		// 还原数据长度
+		auto residueSize = dataSize - 1 - dataSizeSize - dataTypeSize - dataArrayCountSize;
+		uint8_t *newPtr = new uint8_t[ residueSize ];
+		dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
+			delete[] p;
+		} );
+		size_t subIndex = 0;
+		residueSize = residueSize / dataArrayCount;
+		for( index = 0; true; ) {
+			for( ; subIndex < residueSize; ++subIndex )
+				newPtr[ subIndex ] = serialization_data[ subIndex ];
 			converEndian( newPtr, residueSize );
-			dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
-				delete[] p;
-			} );
-		} else if( dataType == 2 ) { // 数组元素
-			serialization_data = serialization_data + 8;
-			ptr = reinterpret_cast< uint8_t * >( &dataArrayCount );
-			for( index = 0; index < 8; ++index )
-				ptr[ index ] = serialization_data[ 7 - index ];
-			auto residueSize = dataSize - 1 - sizeof( dataSize ) * 3; // 剩余数量
-			auto typeUnitySize = residueSize / dataArrayCount; // 元素大小
-			uint8_t *buff = new uint8_t[ typeUnitySize ];
-			uint8_t *newPtr = new uint8_t[ residueSize ];
-			uint64_t subIndex = 0;
-			uint64_t newPtrIndex = 0;
-			for( index = 0; index < dataArrayCount; ++index ) {
-				for( subIndex = 0; subIndex < typeUnitySize; ++subIndex )
-					buff[ subIndex ] = serialization_data[ subIndex ];
-				serialization_data += typeUnitySize; // 下一个元素
-				converEndian( buff, typeUnitySize );
-				for( subIndex = 0; subIndex < typeUnitySize; ++subIndex, ++newPtrIndex )
-					newPtr[ newPtrIndex ] = buff[ subIndex ];
-			}
-			delete[] buff; // 删除元素
-			dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
-				delete[] p;
-			} );
+			newPtr += residueSize;
+			serialization_data += residueSize;
+			if( index == dataArrayCount )
+				break;
+			subIndex = 0;
+			++index;
 		}
-
 		return;
 	}
 	/// 相同端
 
-	auto ptr = reinterpret_cast< uint8_t * >( &dataSize );
-	for( index = 0; index < 8; ++index )
+	auto dataSizeSize = sizeof( dataSize ); // 获取总长数据段大小
+	auto ptr = reinterpret_cast< uint8_t * >( &dataSize ); // 指向总长数据段
+	for( index = 0; index < dataSizeSize; ++index )
 		ptr[ index ] = serialization_data[ index ];
+	serialization_data = serialization_data + dataSizeSize;// 跳过总长数据段
 
-	serialization_data = serialization_data + 8;
-	ptr = reinterpret_cast< uint8_t * >( &dataType );
-	for( index = 0; index < 8; ++index )
+	auto dataTypeSize = sizeof( dataType ); // 获取数据类型段大小
+	ptr = reinterpret_cast< uint8_t * >( &dataType ); // 指向数据类型段
+	for( index = 0; index < dataTypeSize; ++index )
 		ptr[ index ] = serialization_data[ index ];
+	serialization_data = serialization_data + dataTypeSize;// 跳过数据类型段
 
-	serialization_data = serialization_data + 8;
-
-	if( dataType == 1 ) { // 单元素
-		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 2;// 剩余数量
-		uint8_t *newPtr = new uint8_t[ residueSize ];
-		for( index = 0; index < residueSize; ++index )
-			newPtr[ index ] = serialization_data[ index ];
-		dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
-			delete[] p;
-		} );
-	} else if( dataType == 2 ) { // 数组元素
-		serialization_data = serialization_data + 8;
-		ptr = reinterpret_cast< uint8_t * >( &dataArrayCount );
-		for( index = 0; index < 8; ++index )
-			ptr[ index ] = serialization_data[ 7 - index ];
-		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 3; // 剩余数量
-		uint8_t *newPtr = new uint8_t[ residueSize ];
-		for( index = 0; index < residueSize; ++index )
-			newPtr[ index ] = serialization_data[ index ];
-		dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
-			delete[] p;
-		} );
-	}
-
+	auto dataArrayCountSize = sizeof( dataArrayCount ); // 获取数据元素个数段大小
+	ptr = reinterpret_cast< uint8_t * >( &dataArrayCount ); // 指向数据元素个数段
+	for( index = 0; index < dataArrayCountSize; ++index )
+		ptr[ index ] = serialization_data[ index ];
+	serialization_data = serialization_data + dataArrayCountSize;// 跳过数据元素个数段
+	// 还原数据长度
+	auto residueSize = dataSize - 1 - dataSizeSize - dataTypeSize - dataArrayCountSize;
+	uint8_t *newPtr = new uint8_t[ residueSize ];
+	dataArrayShared = std::shared_ptr< uint8_t[ ] >( newPtr, []( uint8_t *p ) {
+		delete[] p;
+	} );
+	for( index = 0; index < residueSize; ++index )
+		newPtr[ index ] = serialization_data[ index ];
 }
 Data_Array DataCheck::littleEndianSerialization( ) {
 	uint8_t *buffPtr = new uint8_t[ dataSize ];
-	*buffPtr = currentEndian;
-	auto offsetPtr = buffPtr + 1;
-	const uint8_t *ptr = reinterpret_cast< uint8_t * >( &dataSize );
-	uint64_t index;
-	for( index = 0; index < 8; ++index )
-		offsetPtr[ index ] = ptr[ index ];
-	offsetPtr += 8;
-	ptr = reinterpret_cast< uint8_t * >( &dataType );
-	for( index = 0; index < 8; ++index )
-		offsetPtr[ index ] = ptr[ index ];
-	offsetPtr += 8;
-	if( dataType == 1 ) { // 单元素
-		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 2;// 剩余数量
-		ptr = dataArrayShared.get( );
-		for( index = 0; index < residueSize; ++index )
-			offsetPtr[ index ] = ptr[ index ];
-	} else if( dataType == 2 ) { // 列表
-		ptr = reinterpret_cast< uint8_t * >( &dataArrayCount );
-		for( index = 0; index < 8; ++index )
-			offsetPtr[ index ] = ptr[ index ];
-		offsetPtr += 8;
-		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 3;// 剩余数量
-		ptr = dataArrayShared.get( );
-		for( index = 0; index < residueSize; ++index )
-			offsetPtr[ index ] = ptr[ index ];
-	}
-	return std::shared_ptr< uint8_t[ ] >( buffPtr, []( uint8_t *p ) {
+	auto resultSPtr = std::shared_ptr< uint8_t[ ] >( buffPtr, []( uint8_t *p ) {
 		delete[] p;
 	} );
-}
-Data_Array DataCheck::bigEndianSerialization( ) {
-	uint8_t *buffPtr = new uint8_t[ dataSize ];
-	*buffPtr = 1;
-	auto offsetPtr = buffPtr + 1;
-	const uint8_t *ptr = reinterpret_cast< uint8_t * >( &dataSize );
-	uint64_t index;
-	for( index = 0; index < 8; ++index )
+
+	auto offsetPtr = buffPtr; // 操作指针
+
+	*offsetPtr = 0; // 小端
+	auto endianSize = sizeof( currentEndian ); // 内存数据本身占用字节
+	offsetPtr += endianSize; // 偏移大端数据
+
+	uint64_t index = 0;
+	const uint8_t *ptr = reinterpret_cast< uint8_t * >( &dataSize ); // 指向数据量
+	auto dataSizeSize = sizeof( dataSize ); // 内存数据本身占用字节
+	for( ; index < dataSizeSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
-	converEndian( offsetPtr, 8 ); // 逆转上一个元素
-	offsetPtr += 8;
-	ptr = reinterpret_cast< uint8_t * >( &dataType );
-	for( index = 0; index < 8; ++index )
+	offsetPtr += dataSizeSize; // 跳过总占用数据段
+
+	ptr = reinterpret_cast< uint8_t * >( &dataType ); // 数据类型
+	auto dataTypeSize = sizeof( dataType ); // 类型数据本身占用字节
+	for( index = 0; index < dataTypeSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
-	converEndian( offsetPtr, 8 ); // 逆转上一个元素
-	offsetPtr += 8;
+	offsetPtr += dataTypeSize; // 跳过数据类型
+
+	ptr = reinterpret_cast< uint8_t * >( &dataArrayCount ); // 数据个数
+	auto dataArrayCountSize = sizeof( dataArrayCount ); // 数据个数数据本身占用字节
+	for( index = 0; index < dataArrayCountSize; ++index )
+		offsetPtr[ index ] = ptr[ index ];
+	offsetPtr += dataArrayCountSize; // 跳过数据个数
+
+	auto residueSize = dataSize - endianSize - dataSizeSize - dataTypeSize - dataArrayCountSize;// 剩余数量
+	if( residueSize == 0 )
+		return nullptr;
+
 	if( dataType == 1 ) { // 单元素
-		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 2;// 剩余数量
 		ptr = dataArrayShared.get( );
 		for( index = 0; index < residueSize; ++index )
 			offsetPtr[ index ] = ptr[ index ];
-		converEndian( offsetPtr, residueSize ); // 逆转上一个元素
 	} else if( dataType == 2 ) { // 列表
-		ptr = reinterpret_cast< uint8_t * >( &dataArrayCount );
-		for( index = 0; index < 8; ++index )
-			offsetPtr[ index ] = ptr[ index ];
-
-		auto residueSize = dataSize - 1 - sizeof( dataSize ) * 3;// 剩余数量
-		if( residueSize != 0 ) {
-			offsetPtr += 8;
-			auto typeUnitySize = residueSize / dataArrayCount; // 元素大小
-			if( typeUnitySize == 0 ) {
-				delete[] buffPtr;
-				return nullptr;
-			}
-			uint64_t subIndex = 0;
-			ptr = dataArrayShared.get( );
-			for( index = 0; index < dataArrayCount; ++index ) {
-				for( subIndex = 0; subIndex < typeUnitySize; ++subIndex )
-					offsetPtr[ subIndex ] = ptr[ subIndex ];
-				ptr += typeUnitySize; // 下一个元素
-				converEndian( offsetPtr, typeUnitySize ); // 逆转上一个元素
-				offsetPtr += subIndex;
-			}
+		auto typeUnitySize = residueSize / dataArrayCount; // 元素大小
+		ptr = dataArrayShared.get( );
+		index = 0;
+		for( uint64_t subIndex = 0; true; ++index ) {
+			for( ; subIndex < typeUnitySize; ++subIndex )
+				offsetPtr[ subIndex ] = ptr[ subIndex ];
+			if( index == dataArrayCount )
+				break;
+			offsetPtr += typeUnitySize;
+			ptr += typeUnitySize;
+			subIndex = 0;
 		}
 
 	}
-	return std::shared_ptr< uint8_t[ ] >( buffPtr, []( uint8_t *p ) {
+	return resultSPtr;
+}
+Data_Array DataCheck::bigEndianSerialization( ) {
+	uint8_t *buffPtr = new uint8_t[ dataSize ];
+	auto resultSPtr = std::shared_ptr< uint8_t[ ] >( buffPtr, []( uint8_t *p ) {
 		delete[] p;
 	} );
+
+	auto offsetPtr = buffPtr; // 操作指针
+
+	*offsetPtr = 1; // 大端
+	auto endianSize = sizeof( currentEndian ); // 内存数据本身占用字节
+	offsetPtr += endianSize; // 偏移大端数据
+
+	uint64_t index = 0;
+	const uint8_t *ptr = reinterpret_cast< uint8_t * >( &dataSize ); // 指向数据量
+	auto dataSizeSize = sizeof( dataSize ); // 内存数据本身占用字节
+	for( ; index < dataSizeSize; ++index )
+		offsetPtr[ index ] = ptr[ index ];
+	converEndian( offsetPtr, dataSizeSize ); // 逆转总占用数据段
+	offsetPtr += dataSizeSize; // 跳过总占用数据段
+
+	ptr = reinterpret_cast< uint8_t * >( &dataType ); // 数据类型
+	auto dataTypeSize = sizeof( dataType ); // 类型数据本身占用字节
+	for( index = 0; index < dataTypeSize; ++index )
+		offsetPtr[ index ] = ptr[ index ];
+	converEndian( offsetPtr, dataTypeSize ); // 逆转数据类型
+	offsetPtr += dataTypeSize; // 跳过数据类型
+
+	ptr = reinterpret_cast< uint8_t * >( &dataArrayCount ); // 数据个数
+	auto dataArrayCountSize = sizeof( dataArrayCount ); // 数据个数数据本身占用字节
+	for( index = 0; index < dataArrayCountSize; ++index )
+		offsetPtr[ index ] = ptr[ index ];
+	converEndian( offsetPtr, dataArrayCountSize ); // 逆转数据个数
+	offsetPtr += dataArrayCountSize; // 跳过数据个数
+
+	auto residueSize = dataSize - endianSize - dataSizeSize - dataTypeSize - dataArrayCountSize;// 剩余数量
+	if( residueSize == 0 )
+		return nullptr;
+
+	if( dataType == 1 ) { // 单元素
+		ptr = dataArrayShared.get( );
+		for( index = 0; index < residueSize; ++index )
+			offsetPtr[ index ] = ptr[ index ];
+		auto typeUnitySize = residueSize / dataArrayCount;
+		converEndian( offsetPtr, typeUnitySize ); // 逆转上一个元素
+	} else if( dataType == 2 ) { // 列表
+		auto typeUnitySize = residueSize / dataArrayCount; // 元素大小
+		ptr = dataArrayShared.get( );
+		index = 0;
+		for( uint64_t subIndex = 0; true; ++index ) {
+			for( ; subIndex < typeUnitySize; ++subIndex )
+				offsetPtr[ subIndex ] = ptr[ subIndex ];
+			converEndian( offsetPtr, typeUnitySize ); // 逆转上一个元素
+			if( index == dataArrayCount )
+				break;
+			offsetPtr += typeUnitySize;
+			ptr += typeUnitySize;
+			subIndex = 0;
+		}
+
+	}
+	return resultSPtr;
 }
 
 /// <summary>
