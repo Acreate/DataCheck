@@ -51,6 +51,12 @@ namespace cylDataCheck {
 		/// </summary>
 		/// <param name="serialization_data">已经被序列化的对象</param>
 		DataCheck( uint8_t *serialization_data );
+		/// <summary>
+		/// 从一个已经被序列化的对象初始化校验串
+		/// </summary>
+		/// <param name="serialization_data">已经被序列化的对象</param>
+		DataCheck( std::shared_ptr< uint8_t[ ] > serialization_data ): DataCheck( serialization_data.get( ) ) {
+		}
 	public:
 		/// <summary>
 		/// 序列化到大端数据
@@ -72,6 +78,40 @@ namespace cylDataCheck {
 		/// </summary>
 		/// <returns>被序列化的串</returns>
 		Data_Array bigEndianSerialization( );
+	public: // - 属性
+
+		/// <summary>
+		/// 获取串的大小端信息
+		/// </summary>
+		/// <returns>等于0表示小端，否则等于大端</returns>
+		uint8_t getCurrentEndian( ) const { return currentEndian; }
+		/// <summary>
+		/// 数据串的总数据占用
+		/// </summary>
+		/// <returns>总长度</returns>
+		uint64_t getDataSize( ) const { return dataSize; }
+		/// <summary>
+		/// 获取数据串的类型
+		/// </summary>
+		/// <returns>类型 1 为单元素对象， 2 为数组元素对象</returns>
+		uint64_t getDataType( ) const { return dataType; }
+		/// <summary>
+		/// 获取数据串中的数据个数
+		/// </summary>
+		/// <returns>单元数对象总是小于或者等于1，数据元素对象大于或者等于0</returns>
+		uint64_t getDataArrayCount( ) const { return dataArrayCount; }
+		/// <summary>
+		/// 获取数据段的起始地址
+		/// </summary>
+		/// <returns>指向数据段的起始指针</returns>
+		const uint8_t * getDataArrayPtr( ) const { return dataArrayShared.get( ); }
+		/// <summary>
+		/// 获取数据段数据的个数
+		/// </summary>
+		/// <returns>个数</returns>
+		uint64_t getDataArrayLen( ) const {
+			return dataSize - sizeof( currentEndian ) - sizeof( dataSize ) - sizeof( dataType ) - sizeof( dataArrayCount );
+		}
 	};
 }
 

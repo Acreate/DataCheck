@@ -283,6 +283,20 @@ void testDataCheckBitToLit( ) {
 
 }
 void testDataCheck( ) {
+	std::cout << "\n\n-------------------- testDataCheck" << std::endl;
+	uint64_t resuult;
+	cylDataCheck::Data_Array dataArray = cylDataCheck::Serialization< int >::serialization( 22, resuult ); // 获取小端数据
+	std::cout << u8"转换对象 : " << 22 << std::endl;
+	auto dataCheck = cylDataCheck::DataCheck( dataArray );
+	auto dataArrayPtr = dataCheck.getDataArrayPtr( );
+	if( dataArrayPtr ) {
+		std::cout << u8"输出 DataCheck : " << std::endl << '\t';
+		uint64_t dataArrayLen = dataCheck.getDataArrayLen( );
+		for( int index = 0; index < dataArrayLen; ++index )
+			std::cout << static_cast< int >( dataArrayPtr[ index ] ) << ", ";
+		std::cout << std::endl;
+	}
+	std::cout << "testDataCheck --------------------\n\n" << std::endl;
 	testDataCheckBool( );
 	testDataCheckInt( );
 	testDataCheckIntArray( );
