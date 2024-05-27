@@ -68,12 +68,12 @@ Data_Array Serialization< T_Serialization_Data_Unity >::serialization( const T_S
 	offsetPtr += maxBuffLenSize;
 
 	ptr = reinterpret_cast< const uint8_t * >( &type );
-	for(index = 0 ; index < typeSize; ++index )
+	for( index = 0; index < typeSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
 	offsetPtr += typeSize;
 
 	ptr = reinterpret_cast< const uint8_t * >( &array_count );
-	for( index = 0 ; index < arrayCounSize; ++index )
+	for( index = 0; index < arrayCounSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
 	offsetPtr += arrayCounSize;
 
@@ -87,15 +87,20 @@ Data_Array Serialization< T_Serialization_Data_Unity >::serialization( const T_S
 
 template< typename T_Serialization_Data_Array_Ptr >
 Data_Array Serialization< T_Serialization_Data_Array_Ptr [ ] >::serialization( const T_Serialization_Data_Array_Ptr *serialization_data, const uint64_t &array_count, uint64_t &data_serialization_result_len ) {
-	uint64_t arrayCounSize = sizeof( array_count );
+
 	uint64_t endianFlagSize = sizeof( DataCheck::begEndian );
 	uint64_t maxBuffLenSize = sizeof( data_serialization_result_len );
 	uint64_t typeSize = sizeof( type );
-	uint64_t serializationDataSize = sizeof( *serialization_data ) * array_count;
+	uint64_t arrayCounSize = sizeof( array_count );
+	uint64_t serializationDataSize = sizeof( T_Serialization_Data_Array_Ptr ) * array_count;
 
-	data_serialization_result_len = maxBuffLenSize + typeSize + serializationDataSize + arrayCounSize + endianFlagSize;
+	data_serialization_result_len = endianFlagSize + maxBuffLenSize + typeSize + arrayCounSize + serializationDataSize;
 
 	uint8_t *orgPtr = new uint8_t[ data_serialization_result_len ]; // 原始指针
+	// 返回对象
+	auto resultShared = std::shared_ptr< uint8_t[ ] >( orgPtr, []( uint8_t *p ) {
+		delete[] p;
+	} );
 	uint8_t *offsetPtr = orgPtr; // 操作指针
 
 	*offsetPtr = DataCheck::begEndian; // 大小端
@@ -108,19 +113,17 @@ Data_Array Serialization< T_Serialization_Data_Array_Ptr [ ] >::serialization( c
 	offsetPtr += maxBuffLenSize;
 
 	ptr = reinterpret_cast< const uint8_t * >( &type );
-	for(index = 0  ; index < typeSize; ++index )
+	for( index = 0; index < typeSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
 	offsetPtr += typeSize;
 
 	ptr = reinterpret_cast< const uint8_t * >( &array_count );
-	for( index = 0 ; index < arrayCounSize; ++index )
+	for( index = 0; index < arrayCounSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
 	offsetPtr += arrayCounSize;
 
-	ptr = reinterpret_cast< const uint8_t * >( &serialization_data );
+	ptr = reinterpret_cast< const uint8_t * >( serialization_data );
 	for( index = 0; index < serializationDataSize; ++index )
 		offsetPtr[ index ] = ptr[ index ];
-	return std::shared_ptr< uint8_t[ ] >( orgPtr, []( uint8_t *p ) {
-		delete[] p;
-	} );
+	return resultShared;
 }

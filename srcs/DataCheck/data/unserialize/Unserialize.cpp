@@ -56,27 +56,28 @@ uint64_t Unserialize< T_Serialization_Data_Unity >::unserialize( const uint8_t *
 	uint8_t isbegEndian = *serialization_data;
 	if( isbegEndian != DataCheck::begEndian ) // 大小端不匹配
 		return 0;
-	uint64_t arrayCounSize = sizeof( uint64_t );
+	// 跳过大小端信息数据段
 	uint64_t endianFlagSize = sizeof( DataCheck::begEndian );
-	uint64_t maxBuffLenSize = sizeof( uint64_t );
-	uint64_t typeSize = sizeof( type );
-	uint64_t serializationDataSize = sizeof( T_Serialization_Data_Unity );
-
 	serialization_data = serialization_data + endianFlagSize;
-	// 读取总长度
-	uint64_t userCount = analysisMemoryReadCount( serialization_data, maxBuffLenSize );
 
+	// 读取总长度
+	uint64_t maxBuffLenSize = sizeof( uint64_t );
+	uint64_t userCount = analysisMemoryReadCount( serialization_data, maxBuffLenSize );
+	// 跳过数据总长度数据段
 	serialization_data = serialization_data + maxBuffLenSize;
 	// 读取类型
+	uint64_t typeSize = sizeof( type );
 	uint64_t type = analysisMemoryReadCount( serialization_data, typeSize );
 	if( type != 1 ) // 类型不一致
 		return 0;
-
+	// 跳过类型配置数据段
 	serialization_data = serialization_data + typeSize;
 	// 读取元素个数
+	uint64_t arrayCounSize = sizeof( uint64_t );
 	uint64_t array_count = analysisMemoryReadCount( serialization_data, arrayCounSize );
 	if( array_count == 0 )
 		return 0;
+	uint64_t serializationDataSize = sizeof( T_Serialization_Data_Unity );
 	auto residueDataSize = userCount - typeSize - arrayCounSize - endianFlagSize - maxBuffLenSize; // 剩余数据长度
 	if( residueDataSize < serializationDataSize * array_count )  // 没有剩余的空间，将会直接返回
 		return userCount;
@@ -99,33 +100,35 @@ uint64_t Unserialize< T_Serialization_Data_Array_Ptr [ ] >::unserialize( const u
 	uint8_t isbegEndian = *serialization_data;
 	if( isbegEndian != DataCheck::begEndian ) // 大小端不匹配
 		return 0;
-	uint64_t arrayCounSize = sizeof( uint64_t );
+	// 跳过大小端信息数据段
 	uint64_t endianFlagSize = sizeof( DataCheck::begEndian );
-	uint64_t maxBuffLenSize = sizeof( uint64_t );
-	uint64_t typeSize = sizeof( type );
-	uint64_t serializationDataSize = sizeof( T_Serialization_Data_Array_Ptr );
-
 	serialization_data = serialization_data + endianFlagSize;
-	// 读取总长度
-	uint64_t userCount = analysisMemoryReadCount( serialization_data, maxBuffLenSize );
 
+	// 读取总长度
+	uint64_t maxBuffLenSize = sizeof( uint64_t );
+	uint64_t userCount = analysisMemoryReadCount( serialization_data, maxBuffLenSize );
+	// 跳过数据总长度数据段
 	serialization_data = serialization_data + maxBuffLenSize;
 	// 读取类型
+	uint64_t typeSize = sizeof( type );
 	uint64_t type = analysisMemoryReadCount( serialization_data, typeSize );
 	if( type != 2 ) // 类型不一致
 		return 0;
-
+	// 跳过类型配置数据段
 	serialization_data = serialization_data + typeSize;
 	// 读取元素个数
-	uint64_t array_count = analysisMemoryReadCount( serialization_data, arrayCounSize );
-	if( array_count == 0 )
+	uint64_t arrayCounSize = sizeof( uint64_t );
+	data_serialization_result_count = analysisMemoryReadCount( serialization_data, arrayCounSize );
+	if( data_serialization_result_count == 0 )
 		return 0;
+	uint64_t serializationDataSize = sizeof( T_Serialization_Data_Array_Ptr );
 	auto residueDataSize = userCount - typeSize - arrayCounSize - endianFlagSize - maxBuffLenSize; // 剩余数据长度
-	if( residueDataSize < serializationDataSize * array_count )  // 没有剩余的空间，将会直接返回
+	if( residueDataSize < serializationDataSize * data_serialization_result_count )  // 没有剩余的空间，将会直接返回
 		return userCount;
-
+	// 元素个数计数段
 	serialization_data = serialization_data + arrayCounSize;
-	T_Serialization_Data_Array_Ptr *resultPtr = new T_Serialization_Data_Array_Ptr[ array_count ];
+
+	T_Serialization_Data_Array_Ptr *resultPtr = new T_Serialization_Data_Array_Ptr[ data_serialization_result_count ];
 	uint8_t *ptr = reinterpret_cast< uint8_t * >( resultPtr );
 	for( auto index = 0; index < residueDataSize; ++index )
 		ptr[ index ] = serialization_data[ index ];
